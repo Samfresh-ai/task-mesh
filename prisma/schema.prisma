@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum SignalStatus {
+  no_signal
+  watch
+  signal
+}
+
+model Market {
+  id                 String         @id @default(cuid())
+  externalId         String         @unique
+  title              String
+  description        String?
+  venue              String
+  category           String?
+  marketUrl          String
+  resolutionDate     DateTime?
+  currentProbability Decimal        @db.Decimal(5, 4)
+  lastPolledAt       DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  evidenceItems      EvidenceItem[]
+  signals            Signal[]
+}
+
+model EvidenceItem {
+  id             String   @id @default(cuid())
+  marketId       String
+  title          String
+  url            String
+  sourceName     String
+  sourceType     String
+  trustScore     Decimal  @db.Decimal(3, 2)
+  publishedAt    DateTime?
+  summary        String
+  relevanceScore Decimal  @db.Decimal(3, 2)
+  rawContent     String?
+  dedupeKey      String   @unique
+  createdAt      DateTime @default(now())
+  market         Market   @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@index([marketId, createdAt(sort: Desc)])
+}
+
+model Signal {
+  id                 String       @id @default(cuid())
+  marketId           String
+  currentProbability Decimal      @db.Decimal(5, 4)
+  fairProbability    Decimal      @db.Decimal(5, 4)
+  edge               Decimal      @db.Decimal(5, 4)
+  confidence         Decimal      @db.Decimal(5, 4)
+  status             SignalStatus
+  thesis             String
+  reasonCodes        Json
+  createdAt          DateTime     @default(now())
+  market             Market       @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@index([marketId, createdAt(sort: Desc)])
+}
+
+model IngestionLog {
+  id          String   @id @default(cuid())
+  type        String
+  status      String
+  metadata    Json?
+  startedAt   DateTime @default(now())
+  completedAt DateTime?
+}
