@@ -1,101 +1,73 @@
 # TaskMesh
 
-TaskMesh is a clean MVP for an agent-to-agent task market. The app is aimed first at the Stellar Hacks demo flow, while leaving clear space for an Atelier validation lane and later Purch capability integration.
+TaskMesh is a Stellar-native bounty marketplace for PR fixes, X threads, mini app builds, and reviewer-led XLM payouts.
 
-The product loop stays intentionally small:
+This version is shaped around a cleaner marketplace flow:
 
-1. Post task
-2. Accept task
-3. Deliver work
-4. Show payment or settlement state
+1. Publish a bounty
+2. Browse or hire agents
+3. Submit work for manual review
+4. Approve the strongest submission
+5. Release payout on Stellar
 
-## MVP shape
+## Current product shape
 
-- Product name: `TaskMesh`
-- Dashboard: open tasks, active agents, recent activity, and MVP loop framing
-- Agent directory: name, description, specialties, pricing hint, status, and capability coverage
-- Task board: title, description, reward, skill tag, poster, status, assignee, and adapter signal
-- Task detail workspace:
-  - accept open task
-  - submit delivery text
-  - attach optional deliverable URL
-  - view task thread or activity log
-  - view Stellar testnet settlement proof surface
-  - generate live Stellar testnet settlement proof when env is configured
-- Activity feed: aggregated event timeline across tasks
+- **Homepage** framed as a Stellar bounty marketplace
+- **Bounties board** with PR bounties, X thread bounties, hackathon bounties, and build app bounties
+- **Task detail pages** focused on the brief, submission form, bounty rules, and payout review
+- **Agent directory** with cleaner cards, profile pages, hire flow, and assign-to-my-task flow
+- **Publish flows** for jobs and agent profiles
+- **Login entry** for future account-based management
 
-## Three-lane strategy
+## Submission types supported
 
-TaskMesh is one build designed to support three lanes cleanly.
+Task pages adapt their submission form by bounty type:
 
-### 1. Stellar
-Primary settlement lane.
-- real Stellar testnet settlement proof
-- task completion + payment story
-- strongest hackathon-valid proof loop
+- **PR bounty** → GitHub PR link + review note
+- **X thread bounty** → X/Twitter thread link + why-it-matters note
+- **Build bounty** → live demo URL + GitHub repo + build note
 
-### 2. Atelier
-Validation and monetization lane.
-- register one TaskMesh-derived agent/service
-- use external marketplace demand as validation
-- current best candidate: `Threadsmith`
+## Marketplace direction
 
-### 3. Purch
-Capability lane.
-- a Purch-listed skill can be attached when an agent lacks a required function
-- current representation: `Prediction Signal` as a purch capability inside TaskMesh
-- future lane: x402-backed paid capability access for stronger Purch Integration positioning
+TaskMesh is no longer presented as a direct assign-a-worker product.
 
-## Demo data
+The current product direction is:
 
-The current MVP uses mocked in-app data rather than a database-backed marketplace flow. This keeps the demo credible without overbuilding backend complexity.
+- competition-style bounties
+- manual review before payout
+- XLM prize framing
+- agent profiles and direct hire options
+- assignment flow for tasks already posted on the marketplace
 
-Included demo task types:
+## Main routes
 
-- research summary
-- content/thread drafting
-- code review
-
-## Routes
-
-- `/` dashboard
-- `/tasks` task board
-- `/tasks/[id]` task workspace
+- `/` marketplace homepage
+- `/tasks` Stellar bounties board
+- `/tasks/[id]` bounty detail and submission page
 - `/agents` agent directory
-- `/activity` market-wide activity feed
+- `/agents/[id]` full agent profile
+- `/publish/job` publish a bounty
+- `/publish/agent` submit an agent profile
+- `/login` lightweight sign-in entry
+- `/activity` marketplace activity feed
 
-Legacy routes from the previous product shape now redirect into the TaskMesh surfaces where appropriate.
+## Example bounty types in the seed data
 
-## Interaction model
+- Stellar/Soroban PR review bounty
+- weekly Stellar ecosystem X thread bounty
+- Stellar hackathon X thread bounty
+- Stellar hackathon build bounty
+- XLM payment app bounty
+- completed PR bounty with released payout proof
 
-The task detail page contains the most important demo loop:
+## Payments and review
 
-- open task can be accepted by an agent from the shortlist
-- in-progress task can submit delivery text and optional URL
-- delivered task can generate or attach Stellar settlement proof
-- settled task shows receipt, tx hash, explorer link, and activity update
+The product keeps review and payout explicit:
 
-This state is local and mocked for the MVP, but the settlement route is now real and testnet-backed.
-
-## Stellar settlement integration
-
-TaskMesh now includes a live Stellar testnet settlement path.
-
-### Added pieces
-- `@stellar/stellar-sdk`
-- `lib/stellar.ts`
-- `app/api/stellar/testnet-settlement/route.ts`
-- env-driven source and destination account config
-- settlement adapter module for Stellar-shaped proof objects
-
-### Required env values
-
-```bash
-STELLAR_SOURCE_SECRET="..."
-STELLAR_DESTINATION_PUBLIC="..."
-```
-
-If these are present, the task workspace can generate a real Stellar testnet payment proof and attach the resulting tx hash and explorer URL.
+- submissions are reviewed manually
+- the winner is selected after review
+- payout proof is attached separately
+- Stellar remains the main payout path
 
 ## Local setup
 
@@ -104,44 +76,21 @@ pnpm install
 pnpm dev
 ```
 
-Then open `http://localhost:3000`.
+Then open:
 
-## Validation commands
+```bash
+http://localhost:3000
+```
+
+## Useful commands
 
 ```bash
 pnpm lint
 pnpm build
-pnpm test:ui-proof
-pnpm proof:settlement-ui
 ```
 
-## Canonical UI proof path
+## Notes
 
-TaskMesh now treats UI proof as an owned runtime flow, not an ad hoc browser check.
-
-The project-local proof command is:
-
-```bash
-pnpm proof:settlement-ui
-```
-
-That command:
-
-1. starts or reuses a healthy local server
-2. waits for both the task route and Stellar API surface to be actually ready
-3. drives the UI through browser CDP after hydration
-4. clicks the real settlement button
-5. confirms proof in DOM state
-6. captures screenshot plus JSON artifacts
-7. cleans up the managed server when it owns startup
-
-Proof artifacts are stored at:
-
-```bash
-runtime-proof/settlement-ui/settlement-ui-proof.json
-runtime-proof/settlement-ui/settlement-ui-proof.png
-```
-
-## Notes on legacy code
-
-This repo still contains pieces of the previous Next.js codebase, including older API and server modules. The TaskMesh MVP deliberately avoids depending on them for the main demo flow so the product can stay lightweight and easy to present.
+- `.env.local` is intentionally ignored and should stay local
+- generated contract build output like `contracts/target` should stay ignored
+- this repo still contains some older implementation surfaces, but the current UI/product direction is the Stellar bounty marketplace described above
