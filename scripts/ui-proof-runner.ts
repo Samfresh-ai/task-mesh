@@ -109,7 +109,7 @@ export type UiProofRuntime = {
   screenshotPath: string;
   timings: Record<string, number>;
   startedAt: number;
-  reportProgress(message: string): void;
+  reportProgress(message: string, force?: boolean): void;
 };
 
 export type UiProofReadinessCheck = {
