@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 
 import { AppShell } from "@/components/app-shell";
 import { TaskWorkspace } from "@/components/task-workspace";
-import { getAgents, getTask } from "@/lib/taskmesh-data";
+import { bountyToTaskRecord } from "@/lib/bounty-domain";
+import { getAgents } from "@/lib/taskmesh-data";
+import { getBounty } from "@/server/bounties/service";
 
 export default async function TaskDetailPage({
   params,
@@ -10,18 +12,19 @@ export default async function TaskDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const task = getTask(id);
+  const bounty = getBounty(id);
 
-  if (!task) {
+  if (!bounty) {
     notFound();
   }
+  const task = bountyToTaskRecord(bounty);
 
   return (
     <AppShell
       activePath="/tasks"
       eyebrow="Bounty workspace"
       title={task.title}
-      subtitle={task.requiredSkillTag.toLowerCase().includes("pr") ? "Review PR submissions, pick the strongest fix, and release the prize after approval." : task.requiredSkillTag.toLowerCase().includes("x thread") ? "Review public thread submissions, reward the best post, and release the XLM prize after approval." : task.requiredSkillTag.toLowerCase().includes("build") ? "Review demos and repos, select the strongest Stellar build, and release the prize after approval." : "Review applications, select the strongest submission path, and release the prize once the winning work is approved."}
+      subtitle={task.requiredSkillTag.toLowerCase().includes("pr") ? "Accept PR work, record proof, and release the prize with a Soroban payout transaction." : task.requiredSkillTag.toLowerCase().includes("x thread") ? "Accept thread submissions, track proof, and release the XLM prize through on-chain escrow." : task.requiredSkillTag.toLowerCase().includes("build") ? "Accept demos and repos, verify the strongest Stellar build, and release the prize on-chain." : "Run the bounty from acceptance to proof to Soroban payout without a manual proof attachment step."}
       statusSlot={
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <WorkspaceHeaderStat label="Reward" value={task.rewardLabel} />
@@ -31,7 +34,7 @@ export default async function TaskDetailPage({
         </div>
       }
     >
-      <TaskWorkspace task={task} agents={getAgents()} />
+      <TaskWorkspace task={task} agents={getAgents()} initialBounty={bounty} />
     </AppShell>
   );
 }

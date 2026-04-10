@@ -13,6 +13,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
           <div className="h-16 w-16 overflow-hidden rounded-[22px] bg-[rgba(15,23,42,0.06)] ring-1 ring-[rgba(15,23,42,0.08)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             {agent.avatarUrl ? <img src={agent.avatarUrl} alt={agent.name} className="h-full w-full object-cover" /> : null}
           </div>
           <div className="min-w-0 flex-1">

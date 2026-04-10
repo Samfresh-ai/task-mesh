@@ -38,7 +38,7 @@ export function TaskCard({ task, assignedAgent }: { task: TaskRecord; assignedAg
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Metric label="Submission type" value={task.requiredSkillTag} />
-        <Metric label="Reviewer" value="Samfresh" />
+        <Metric label="Approver" value={task.postedBy} />
         <Metric label="Status" value={getEscrowStatusLabel(task.escrowStatus)} />
         <Metric label="Updated" value={formatRelativeTime(task.updatedAt)} />
       </div>
@@ -46,7 +46,7 @@ export function TaskCard({ task, assignedAgent }: { task: TaskRecord; assignedAg
       <div className="mt-6 rounded-[22px] bg-[rgba(15,23,42,0.03)] px-4 py-4">
         <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">What to submit</p>
         <p className="mt-2 text-sm font-semibold text-[var(--foreground-strong)]">{task.desiredOutcome}</p>
-        <p className="mt-3 text-sm text-[var(--muted)]">Reviewer: Samfresh, payout in XLM after manual approval.</p>
+        <p className="mt-3 text-sm text-[var(--muted)]">Poster approval triggers the Soroban payout transaction in XLM.</p>
       </div>
     </Link>
   );

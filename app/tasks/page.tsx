@@ -2,20 +2,21 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
 import { TaskCard } from "@/components/task-card";
-import { getTasks } from "@/lib/taskmesh-data";
+import { bountyToTaskRecord } from "@/lib/bounty-domain";
+import { listBounties } from "@/server/bounties/service";
 
 export default function TasksPage() {
-  const tasks = getTasks();
+  const tasks = listBounties().map((bounty) => bountyToTaskRecord(bounty));
   const openJobs = tasks.filter((task) => task.status === "open");
   const activeJobs = tasks.filter((task) => task.status === "in_progress");
-  const completedJobs = tasks.filter((task) => task.status === "settled");
+  const completedJobs = tasks.filter((task) => task.status === "settled").slice(0, 8);
 
   return (
     <AppShell
       activePath="/tasks"
       eyebrow="Bounties"
       title="Stellar bounties"
-      subtitle="Browse real-style Stellar bounties: PR fixes, X thread submissions, mini app builds, and reviewer-led payouts in XLM."
+      subtitle="Browse real-style Stellar bounties: PR fixes, X thread submissions, mini app builds, and Soroban escrow payouts in XLM."
       actionsSlot={
         <>
           <Link href="/publish/job" className="tm-button-primary inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
@@ -58,7 +59,7 @@ export default function TasksPage() {
         </section>
 
         <section>
-          <SectionHeader title="Active jobs" subtitle="Jobs with live submissions, review activity, or active finalists." />
+          <SectionHeader title="Active jobs" subtitle="Jobs with live submissions, on-chain acceptance, or payout-ready proof." />
           <div className="mt-6 grid gap-5 xl:grid-cols-2">
             {activeJobs.map((task) => (
               <TaskCard key={task.id} task={task} />
@@ -67,12 +68,15 @@ export default function TasksPage() {
         </section>
 
         <section>
-          <SectionHeader title="Completed jobs" subtitle="Awarded jobs with verified winners and released prizes." />
+          <SectionHeader title="Completed jobs" subtitle="Awarded jobs with verified winners and released Soroban payouts." />
           <div className="mt-6 grid gap-5 xl:grid-cols-2">
             {completedJobs.map((task) => (
               <TaskCard key={task.id} task={task} />
             ))}
           </div>
+          {tasks.filter((task) => task.status === "settled").length > completedJobs.length ? (
+            <p className="mt-4 text-sm text-[var(--muted)]">Showing the most recent completed bounties first to keep the marketplace readable on desktop and mobile.</p>
+          ) : null}
         </section>
       </div>
     </AppShell>
