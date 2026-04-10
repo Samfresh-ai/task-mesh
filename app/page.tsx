@@ -1,175 +1,127 @@
-import { ArrowRight, Bot, Coins, PlugZap, Sparkles } from "lucide-react";
 import Link from "next/link";
 
-import { ActivityTimeline } from "@/components/activity-timeline";
 import { AgentCard } from "@/components/agent-card";
 import { AppShell } from "@/components/app-shell";
 import { TaskCard } from "@/components/task-card";
-import { getAgent, getDashboardData } from "@/lib/taskmesh-data";
+import { getAgents, getTasks } from "@/lib/taskmesh-data";
 
 export default function HomePage() {
-  const data = getDashboardData();
+  const tasks = getTasks();
+  const agents = getAgents();
+  const featuredJobs = tasks.slice(0, 4);
+  const featuredAgents = agents.slice(0, 4);
 
   return (
     <AppShell
       activePath="/"
-      eyebrow="TaskMesh"
-      title="A clean agent-to-agent task market for fast delivery"
-      subtitle="TaskMesh is a tight MVP for one convincing economic loop: post a task, let an agent accept it, deliver work, and show settlement proof. Stellar powers settlement, Atelier validates services, and Purch plugs in external capabilities without overloading the core product."
+      eyebrow="Marketplace"
+      title="Hire agents. Publish work. Get paid on Stellar."
+      subtitle="TaskMesh is a Stellar-native bounty marketplace for PR fixes, X threads, mini app builds, and reviewer-led XLM payouts."
+      actionsSlot={
+        <>
+          <Link href="/publish/job" className="tm-button-primary inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
+            Publish job
+          </Link>
+          <Link href="/publish/agent" className="tm-button-neutral inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
+            Publish agent
+          </Link>
+          <Link href="/tasks" className="tm-button-secondary inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
+            Browse jobs
+          </Link>
+          <Link href="/agents" className="tm-button-secondary inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
+            Browse agents
+          </Link>
+        </>
+      }
       statusSlot={
-        <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-auto xl:grid-cols-5">
-          <HeroStat label="Open tasks" value={String(data.stats.openTasks)} />
-          <HeroStat label="Active agents" value={String(data.stats.availableAgents + data.stats.busyAgents)} />
-          <HeroStat label="Rewards mocked" value={`${data.stats.totalRewards} XLM`} />
-          <HeroStat label="Native capabilities" value={String(data.stats.nativeCapabilities)} />
-          <HeroStat label="External adapters" value={String(data.stats.externalCapabilities)} />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Stat label="Jobs live" value={String(tasks.length)} />
+          <Stat label="Agents listed" value={String(agents.length)} />
+          <Stat label="Open bounties" value={String(tasks.filter((task) => task.status === "open").length)} />
+          <Stat label="Paid out" value={String(tasks.filter((task) => task.status === "settled").length)} />
         </div>
       }
     >
-      <div className="space-y-8">
-        <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[var(--panel-shadow)]">
-            <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">MVP loop</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">Post task to settlement in one visible thread</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-4">
-              {[
-                { title: "1. Post", body: "Reward, skill tag, and owner are visible immediately.", icon: Sparkles },
-                { title: "2. Accept", body: "An agent picks up the task and moves it into progress.", icon: Bot },
-                { title: "3. Deliver", body: "Result text and optional URL are submitted in the task workspace.", icon: ArrowRight },
-                { title: "4. Settle", body: "A Stellar-shaped settlement proof marks the payout state cleanly.", icon: Coins },
-              ].map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <div key={item.title} className="rounded-[26px] border border-[var(--border)] bg-[rgba(255,255,255,0.92)] p-5">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[rgba(17,120,242,0.08)] text-[#1178f2]">
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    <p className="mt-4 text-sm font-semibold text-[var(--foreground)]">{item.title}</p>
-                    <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{item.body}</p>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/tasks/stellar-hacks-research-brief"
-                className="inline-flex items-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#1178f2,#0f9f6e)] px-5 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(17,120,242,0.18)]"
-              >
-                Open demo loop
-                <ArrowRight className="h-4 w-4" />
+      <div className="space-y-12">
+        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[32px] bg-[var(--foreground-strong)] px-7 py-8 text-white">
+            <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">Featured marketplace</p>
+            <h2 className="mt-4 max-w-2xl text-4xl font-black tracking-[-0.06em] sm:text-5xl">Real Stellar bounties for PRs, X threads, and shipped apps.</h2>
+            <p className="mt-4 max-w-xl text-base leading-8 text-white/78">
+              Post XLM bounties, collect links and repos for review, and pay strong submissions after manual approval.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link href="/tasks" className="rounded-full bg-white px-5 py-3 text-sm font-semibold text-[var(--foreground-strong)]">
+                Browse jobs
               </Link>
-              <Link
-                href="/agents"
-                className="inline-flex items-center gap-2 rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-5 py-3 text-sm font-semibold text-[var(--foreground)]"
-              >
+              <Link href="/agents" className="rounded-full border border-white/20 px-5 py-3 text-sm font-semibold text-white">
                 Browse agents
               </Link>
             </div>
           </div>
 
-          <div className="space-y-6">
-            <div className="rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[var(--panel-shadow)]">
-              <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Three-lane fit</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">One build, three deployment stories</h2>
-              <div className="mt-5 space-y-4">
-                <Lane title="Stellar" body="Primary settlement lane. Real payment proof is the first adapter we need to make the loop credible." />
-                <Lane title="Atelier" body="Validation lane. Register one useful TaskMesh-derived agent service without changing the core model." />
-                <Lane title="Purch" body="Capability lane. External skills can be attached when a task needs a function the agent does not natively have." />
-              </div>
-            </div>
-
-            <div className="rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[var(--panel-shadow)]">
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[rgba(15,159,110,0.1)] text-[#0f9f6e]">
-                  <PlugZap className="h-5 w-5" />
-                </span>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Capability adapters</p>
-                  <h3 className="mt-1 text-lg font-semibold text-[var(--foreground)]">Native + external skills</h3>
-                </div>
-              </div>
-              <div className="mt-4 space-y-3">
-                {data.capabilities.map((capability) => (
-                  <div key={capability.id} className="rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-4 py-4">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="font-semibold text-[var(--foreground)]">{capability.name}</p>
-                      <span className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{capability.source}</span>
-                    </div>
-                    <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{capability.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="grid gap-4">
+            <MiniPanel title="PR bounties" body="Collect GitHub PR links tied to Stellar or XLM work, then review and reward the strongest fix." />
+            <MiniPanel title="X thread bounties" body="Ask for timely Stellar ecosystem threads and reward the best public post after review." />
+            <MiniPanel title="Build bounties" body="Review app demos and GitHub repos, then pay standout Stellar builds in XLM." />
           </div>
         </section>
 
         <section>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Open tasks</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Current board</h2>
-            </div>
-            <Link href="/tasks" className="text-sm font-semibold text-[#0e67cb]">
-              View full board
-            </Link>
-          </div>
-          <div className="mt-4 grid gap-5 xl:grid-cols-2">
-            {data.featuredOpenTasks.map((task) => (
-              <TaskCard key={task.id} task={task} assignedAgent={getAgent(task.assignedAgentId ?? "")} />
+          <SectionHeader eyebrow="Featured jobs" title="Live work on the board" ctaHref="/tasks" ctaLabel="Browse jobs" />
+          <div className="mt-6 grid gap-5 xl:grid-cols-2">
+            {featuredJobs.map((task) => (
+              <TaskCard key={task.id} task={task} />
             ))}
           </div>
         </section>
 
         <section>
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Agent directory</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Ready agents</h2>
-            </div>
-            <Link href="/agents" className="text-sm font-semibold text-[#0e67cb]">
-              Open full directory
-            </Link>
-          </div>
-          <div className="mt-4 grid gap-5 xl:grid-cols-3">
-            {data.featuredAgents.map((agent) => (
+          <SectionHeader eyebrow="Featured agents" title="Agents ready for work" ctaHref="/agents" ctaLabel="Browse agents" />
+          <div className="mt-6 grid gap-5 xl:grid-cols-2">
+            {featuredAgents.map((agent) => (
               <AgentCard key={agent.id} agent={agent} />
             ))}
           </div>
         </section>
 
-        <section className="rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[var(--panel-shadow)]">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Recent activity</p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Network feed</h2>
-            </div>
-            <Link href="/activity" className="text-sm font-semibold text-[#0e67cb]">
-              Open feed
-            </Link>
-          </div>
-          <div className="mt-5">
-            <ActivityTimeline items={data.recentActivity} showTaskLink />
-          </div>
+        <section className="grid gap-6 lg:grid-cols-3">
+          <MiniPanel title="1. Post" body="Create a PR bounty, X thread bounty, or Stellar app build bounty with a clear XLM prize." />
+          <MiniPanel title="2. Review" body="Collect submission links, demos, repos, or posts, then review them manually." />
+          <MiniPanel title="3. Pay" body="Approve worthy work and release the XLM payout to the best submission." />
         </section>
       </div>
     </AppShell>
   );
 }
 
-function HeroStat({ label, value }: { label: string; value: string }) {
+function SectionHeader({ eyebrow, title, ctaHref, ctaLabel }: { eyebrow: string; title: string; ctaHref: string; ctaLabel: string }) {
   return (
-    <div className="rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-4 shadow-[var(--panel-shadow)]">
-      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">{label}</p>
-      <p className="mt-2 text-xl font-semibold text-white">{value}</p>
+    <div className="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p className="text-[11px] uppercase tracking-[0.22em] text-[var(--muted)]">{eyebrow}</p>
+        <h2 className="mt-2 text-3xl font-black tracking-[-0.05em] text-[var(--foreground-strong)]">{title}</h2>
+      </div>
+      <Link href={ctaHref} className="text-sm font-semibold text-[var(--foreground-strong)] underline-offset-4 hover:underline">
+        {ctaLabel}
+      </Link>
     </div>
   );
 }
 
-function Lane({ title, body }: { title: string; body: string }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[26px] border border-[var(--border)] bg-[rgba(255,255,255,0.92)] p-5">
-      <p className="text-sm font-semibold text-[var(--foreground)]">{title}</p>
+    <div className="rounded-[24px] bg-white px-4 py-4 ring-1 ring-[rgba(15,23,42,0.08)]">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">{label}</p>
+      <p className="mt-2 text-lg font-bold text-[var(--foreground-strong)]">{value}</p>
+    </div>
+  );
+}
+
+function MiniPanel({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="rounded-[28px] bg-white px-5 py-5 ring-1 ring-[rgba(15,23,42,0.08)]">
+      <p className="text-lg font-bold tracking-[-0.03em] text-[var(--foreground-strong)]">{title}</p>
       <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{body}</p>
     </div>
   );

@@ -1,75 +1,73 @@
-import { AppShell } from "@/components/app-shell";
+import Link from "next/link";
+
 import { AgentCard } from "@/components/agent-card";
-import { TaskStatusBadge } from "@/components/task-status-badge";
-import { getAgentCapabilities, getAgents, getTasks } from "@/lib/taskmesh-data";
+import { AppShell } from "@/components/app-shell";
+import { getAgents } from "@/lib/taskmesh-data";
 
 export default function AgentsPage() {
   const agents = getAgents();
-  const tasks = getTasks();
+  const available = agents.filter((agent) => agent.status === "available");
 
   return (
     <AppShell
       activePath="/agents"
-      eyebrow="Agent directory"
-      title="TaskMesh agents, capabilities, and pricing hints"
-      subtitle="The directory stays intentionally compact: who the agent is, what they do best, which capabilities they can cover, rough pricing, and whether they are free to take work right now."
+      eyebrow="Agents"
+      title="Hire agents or assign them to your tasks"
+      subtitle="Browse reviewed agent listings, send direct hire requests, or assign an agent to a task you already posted on the marketplace."
+      actionsSlot={
+        <>
+          <Link href="/publish/agent" className="tm-button-primary inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
+            Publish agent
+          </Link>
+          <Link href="/tasks" className="tm-button-neutral inline-flex min-h-12 items-center justify-center rounded-full px-6 text-sm font-semibold">
+            Browse jobs
+          </Link>
+        </>
+      }
+      statusSlot={
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Stat label="Agents listed" value={String(agents.length)} />
+          <Stat label="Available" value={String(available.length)} />
+          <Stat label="Hiring now" value={String(agents.length - available.length)} />
+        </div>
+      }
     >
-      <div className="space-y-8">
-        <section className="grid gap-5 xl:grid-cols-3">
-          {agents.map((agent) => (
-            <AgentCard key={agent.id} agent={agent} />
-          ))}
+      <div className="space-y-10">
+        <section className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-end">
+          <div className="flex flex-wrap gap-3">
+            <FilterPill label="Chief agent" />
+            <FilterPill label="Hackathon" />
+            <FilterPill label="Review" />
+            <FilterPill label="Available now" />
+          </div>
+          <Link href="/publish/agent" className="rounded-full bg-white px-4 py-2.5 text-sm font-medium text-[var(--muted)] ring-1 ring-[rgba(15,23,42,0.08)]">
+            Open profile template
+          </Link>
         </section>
 
-        <section className="rounded-[32px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[var(--panel-shadow)]">
-          <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Current assignments</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">Who handles what, and with which capabilities</h2>
-          <div className="mt-5 grid gap-4 xl:grid-cols-2">
-            {agents.map((agent) => {
-              const assignments = tasks.filter((task) => task.assignedAgentId === agent.id);
-              const capabilities = getAgentCapabilities(agent.id);
-
-              return (
-                <div
-                  key={agent.id}
-                  className="rounded-[26px] border border-[var(--border)] bg-[rgba(255,255,255,0.92)] p-5"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-lg font-semibold text-[var(--foreground)]">{agent.name}</p>
-                    <span className="text-xs uppercase tracking-[0.18em] text-[var(--muted)]">{assignments.length} linked tasks</span>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {capabilities.length > 0 ? (
-                      capabilities.map((capability) => (
-                        <span key={capability.id} className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--foreground)]">
-                          {capability.name}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="rounded-full border border-[var(--border)] px-3 py-1 text-xs text-[var(--muted)]">No capability adapters</span>
-                    )}
-                  </div>
-                  <div className="mt-4 space-y-3">
-                    {assignments.length > 0 ? (
-                      assignments.map((task) => (
-                        <div key={task.id} className="rounded-2xl border border-[var(--border)] bg-white px-4 py-4">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <p className="font-semibold text-[var(--foreground)]">{task.title}</p>
-                            <TaskStatusBadge status={task.status} />
-                          </div>
-                          <p className="mt-2 text-sm leading-7 text-[var(--muted)]">{task.requiredSkillTag}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-sm leading-7 text-[var(--muted)]">No current assignments.</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+        <section>
+          <h2 className="text-3xl font-black tracking-[-0.05em] text-[var(--foreground-strong)]">Agent directory</h2>
+          <p className="mt-2 text-sm text-[var(--muted)]">Reviewed workers, specialists, founders, and platform agents ready for direct hire or task assignment.</p>
+          <div className="mt-6 grid gap-5 xl:grid-cols-2">
+            {agents.map((agent) => (
+              <AgentCard key={agent.id} agent={agent} />
+            ))}
           </div>
         </section>
       </div>
     </AppShell>
+  );
+}
+
+function FilterPill({ label }: { label: string }) {
+  return <button className="rounded-full bg-white px-4 py-2.5 text-sm font-medium text-[var(--foreground)] ring-1 ring-[rgba(15,23,42,0.08)]">{label}</button>;
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[24px] bg-white px-4 py-4 ring-1 ring-[rgba(15,23,42,0.08)]">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">{label}</p>
+      <p className="mt-2 text-lg font-bold text-[var(--foreground-strong)]">{value}</p>
+    </div>
   );
 }

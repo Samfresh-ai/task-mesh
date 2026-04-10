@@ -1,76 +1,62 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowRight, Coins, PlugZap, Sparkles } from "lucide-react";
 
-import type { Agent, TaskRecord } from "@/lib/taskmesh-data";
-import { getCapability } from "@/lib/taskmesh-data";
 import { TaskStatusBadge } from "@/components/task-status-badge";
+import type { Agent, TaskRecord } from "@/lib/taskmesh-data";
+import { getAgent, getEscrowStatusLabel, getSuggestedAgents } from "@/lib/taskmesh-data";
+import { formatRelativeTime } from "@/lib/utils";
 
 export function TaskCard({ task, assignedAgent }: { task: TaskRecord; assignedAgent?: Agent | null }) {
-  const capability = task.requiredCapabilityId ? getCapability(task.requiredCapabilityId) : null;
+  const worker = assignedAgent ?? (task.workerAgentId ? getAgent(task.workerAgentId) : getSuggestedAgents(task)[0] ?? null);
+  const paymentState =
+    task.status === "settled"
+      ? task.payoutTxLabel ?? task.settlement.proofValue ?? "Released"
+      : task.proofArtifact?.label ?? "Awaiting proof";
 
   return (
-    <Link
-      href={`/tasks/${task.id}`}
-      className="group block rounded-[30px] border border-[var(--border)] bg-[var(--panel)] p-6 shadow-[var(--panel-shadow)] transition duration-300 hover:-translate-y-0.5 hover:border-[rgba(17,120,242,0.24)]"
-    >
+    <Link href={`/tasks/${task.id}`} className="block rounded-[30px] bg-white p-6 ring-1 ring-[rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">{task.postedBy}</p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">{task.title}</h3>
+          <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted)]">Posted by {task.postedBy}</p>
+          <h3 className="mt-2 text-[1.8rem] font-black tracking-[-0.05em] text-[var(--foreground-strong)]">{task.title}</h3>
         </div>
-        <TaskStatusBadge status={task.status} />
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-[rgba(199,122,31,0.12)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#9a5a14]">{task.rewardLabel}</span>
+          <TaskStatusBadge status={task.status} />
+        </div>
       </div>
 
       <p className="mt-4 text-sm leading-7 text-[var(--muted)]">{task.description}</p>
 
       <div className="mt-5 flex flex-wrap gap-2">
-        <span className="rounded-full border border-[var(--border)] bg-[rgba(17,120,242,0.06)] px-3 py-1 text-xs font-medium text-[var(--foreground)]">
-          {task.requiredSkillTag}
-        </span>
-        {capability ? (
-          <span className="rounded-full border border-[var(--border)] bg-[rgba(15,159,110,0.08)] px-3 py-1 text-xs font-medium text-[var(--foreground)]">
-            {capability.source} capability
+        {task.requiredSkills.slice(0, 3).map((skill) => (
+          <span key={skill} className="rounded-full border border-[rgba(15,23,42,0.08)] px-3 py-1 text-xs font-medium text-[var(--foreground)]">
+            {skill}
           </span>
-        ) : null}
-        {assignedAgent ? (
-          <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-xs font-medium text-[var(--foreground)]">
-            {assignedAgent.name}
-          </span>
-        ) : (
-          <span className="rounded-full border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-3 py-1 text-xs font-medium text-[var(--muted)]">
-            Unassigned
-          </span>
-        )}
+        ))}
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--muted)]">Reward</p>
-          <p className="mt-2 flex items-center gap-2 text-base font-semibold text-[var(--foreground)]">
-            <Coins className="h-4 w-4 text-[#1178f2]" />
-            {task.reward}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--muted)]">Settlement</p>
-          <p className="mt-2 flex items-center gap-2 text-base font-semibold text-[var(--foreground)]">
-            <Sparkles className="h-4 w-4 text-[#0f9f6e]" />
-            {task.settlement.status.replaceAll("_", " ")}
-          </p>
-        </div>
-        <div className="rounded-2xl border border-[var(--border)] bg-[rgba(255,255,255,0.92)] px-4 py-3">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-[var(--muted)]">Adapter</p>
-          <p className="mt-2 flex items-center gap-2 text-base font-semibold text-[var(--foreground)]">
-            <PlugZap className="h-4 w-4 text-[#b45309]" />
-            {capability?.source ?? "native"}
-          </p>
-        </div>
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <Metric label="Submission type" value={task.requiredSkillTag} />
+        <Metric label="Reviewer" value="Samfresh" />
+        <Metric label="Status" value={getEscrowStatusLabel(task.escrowStatus)} />
+        <Metric label="Updated" value={formatRelativeTime(task.updatedAt)} />
       </div>
 
-      <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-[#0e67cb]">
-        Open task workspace
-        <ArrowRight className="h-4 w-4 transition group-hover:translate-x-0.5" />
+      <div className="mt-6 rounded-[22px] bg-[rgba(15,23,42,0.03)] px-4 py-4">
+        <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">What to submit</p>
+        <p className="mt-2 text-sm font-semibold text-[var(--foreground-strong)]">{task.desiredOutcome}</p>
+        <p className="mt-3 text-sm text-[var(--muted)]">Reviewer: Samfresh, payout in XLM after manual approval.</p>
       </div>
     </Link>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string; icon?: ReactNode }) {
+  return (
+    <div className="rounded-[20px] bg-[rgba(15,23,42,0.03)] px-4 py-4">
+      <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--muted)]">{label}</p>
+      <p className="mt-2 text-sm font-semibold leading-6 text-[var(--foreground-strong)]">{value}</p>
+    </div>
   );
 }
