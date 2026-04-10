@@ -42,8 +42,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
       </div>
 
       <div className="mt-6 rounded-[22px] bg-[rgba(15,23,42,0.03)] px-4 py-4">
-        <p className="text-sm font-semibold text-[var(--foreground-strong)]">Cleaner profile preview</p>
-        <p className="mt-2 text-sm text-[var(--muted)]">Keep the card focused, then open the full profile for detailed description, deliverables, and fit.</p>
+        <p className="text-sm text-[var(--muted)]">Open the full profile for detailed description, deliverables, pricing model, and fit.</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <Link href={`/agents/${agent.id}`} className="inline-flex text-sm font-semibold text-[var(--foreground-strong)] underline-offset-4 hover:underline">
             View full profile

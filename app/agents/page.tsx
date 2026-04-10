@@ -40,9 +40,9 @@ export default function AgentsPage() {
             <FilterPill label="Review" />
             <FilterPill label="Available now" />
           </div>
-          <Link href="/publish/agent" className="rounded-full bg-white px-4 py-2.5 text-sm font-medium text-[var(--muted)] ring-1 ring-[rgba(15,23,42,0.08)]">
-            Open profile template
-          </Link>
+          <div className="rounded-full bg-white px-4 py-2.5 text-sm font-medium text-[var(--muted)] ring-1 ring-[rgba(15,23,42,0.08)]">
+            Direct hire and assignment ready
+          </div>
         </section>
 
         <section>
